@@ -1,4 +1,7 @@
-local inspect = require "inspect"
+-- vim: set colorcolumn=85
+-- vim: fdm=marker
+
+--local inspect = require "inspect"
 local ceil = math.ceil
 local getTime = love.timer.getTime
 local resume = coroutine.resume
@@ -8,7 +11,9 @@ local font = gr.newFont("dejavusansmono.ttf", 70)
 love.window.setMode(1920, 1080)
 love.window.setTitle('транспонирование матрицы')
 
+-- Матрица из строк
 local type Matrix = {{number}}
+
 local record ColoredText 
     s: string
     color: {number}
@@ -176,6 +181,129 @@ local function matrix_transpose_fast(m: Matrix): Matrix
 
     return res
 end
+
+local function matrix_det2(m: Matrix): number
+    return m[1][1] * m[2][2] - m[1][2] * m[2][1]
+end
+
+local function matrix_det3(m: Matrix): number
+
+end
+
+local function matrix_det_common(m: Matrix): number
+
+end
+
+local function matrix_check_size(m: Matrix): integer
+    local msize, msize_prev: integer, integer = 0, 0
+    for _, v1 in ipairs(m) do
+        msize_prev = msize
+        msize = #v1
+        assert(msize ~= msize_prev)
+        for _, v2 in ipairs(v1) do
+            assert(type(v2) == "number")
+        end
+    end
+    return msize
+end
+
+local function matrix_det(m: Matrix): number
+    local size = matrix_check_size(m)
+    if size == 2 then
+        return matrix_det2(m)
+    elseif size == 3 then
+        return matrix_det3(m)
+    else
+        return matrix_det_common(m)
+    end
+end
+
+local function mat_print(m: Matrix)
+    for _, v1 in ipairs(m) do
+        local s = ""
+        for _, v2 in ipairs(v1) do
+            s = s .. tonumber(v2) .. ","
+        end
+        print(s)
+    end
+end
+
+local function test_det(m: Matrix, det_should_be: number)
+    mat_print(m)
+    assert(matrix_det(m) == det_should_be)
+end
+
+-- {{{ Tests
+
+test_det(
+    { {9, 5}, { -9, 7}},
+    108
+)
+
+test_det(
+    {{9, 15}, { -9, 7}},
+    198
+)
+
+test_det(
+    { {9, 3, 5}, {-6, -9, 7}, {-1, -8, 1} },
+    615
+)
+
+test_det(
+    {{9, 0, 5}, {-6, -9, 7}, {1, -8, 0}},
+    789
+)
+
+test_det(
+   {{-900, 0, 5}, {-6, -9, -7}, {1, -8, 100}},
+   860685
+)
+
+test_det(
+    {{0, 1, 2}, {0, 2,4}, {0, 2,4}},
+    0
+)
+
+test_det(
+    {{100, 11, -2}, {10, 200,-4}, {10, -30,4}},
+    71720
+)
+
+test_det(
+    {{5, 0,1,0}, { 5, 1,0,0}, {1,2,3,4}, {5,6,7,8}},
+    -48
+)
+
+test_det(
+    {{5, 0,1,0}, { 5, 10,0,0}, {1,20,3,4}, {15,6,7,8} },
+    1000
+)
+
+test_det(
+    {{5, 0,1,0}, { 5, 10,0,0}, {1,20,3,4}, {15,6,7,8} },
+    1000
+)
+
+test_det(
+    {{105, 0,1,0}, {5, 0.10,0,0}, {1,20,3,4}, {15,6,7,8} },
+    643.2
+)
+
+print("6*6 matrix det =",
+    matrix_det(
+    {
+        {5, 0,1,0,10.1},
+        {5, 0.10,0,8.2,0},
+        {-0.2,1,2,3,4},
+        {15,6,7,8,0},
+        {2, 10, 1, 3, 0, 1} 
+    })
+)
+
+-- }}}
+
+os.exit()
 
 local function matrix_transpose(m: Matrix): Matrix
     local res: {{number}} = {}
